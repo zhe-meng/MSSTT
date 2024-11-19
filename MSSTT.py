@@ -1,12 +1,13 @@
 from functools import partial
-from torchinfo import summary
+# from torchinfo import summary
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 from timm.models.layers import PatchEmbed,DropPath
 
-from timm.layers.helpers import to_2tuple
+from timm.models.layers.helpers import to_2tuple
+# from timm.layers.helpers import to_2tuple
 
 
 class Unfold(nn.Module):
@@ -366,9 +367,6 @@ class MSSTT(nn.Module):
                  ):
         
 
-
-
-        
         super().__init__()
         st2_idx = sum(depths1[:1])
         st3_idx = sum(depths1[:2])
@@ -379,6 +377,7 @@ class MSSTT(nn.Module):
         act_layer = act_layer or nn.GELU
 
         dpr = [x.item() for x in torch.linspace(0, drop_path_rate, depth)]  # stochastic depth decay rule
+        embed_dims1 = in_chans
         self.patch_embed = FirstPatchEmbed(in_chans=in_chans, embed_dim=embed_dims1)
         self.num_patches1 = num_patches = img_size 
         self.pos_embed1 = nn.Parameter(torch.zeros(1, num_patches, num_patches, embed_dims1))
@@ -401,7 +400,7 @@ class MSSTT(nn.Module):
         return x.mean(1)
     
     def forward(self, x):
-        x = x.squeeze()
+        # x = x.squeeze()
         x = self.forward_features(x)
         x = self.head(x)
         return x
@@ -409,12 +408,11 @@ class MSSTT(nn.Module):
 
     
 if __name__ == '__main__':
-        n_bands = 200
-        patch_size =17
-        input = torch.randn(size=(100,n_bands, patch_size, patch_size))
-        input = input.cuda()
-        print("input shape:", input.shape)
-        model = MSSTT( num_classes=9, embed_dims1= n_bands)
-        model = model.cuda()
-        summary(model, input_size=(2,1,n_bands,patch_size,patch_size),col_names=['num_params','kernel_size','mult_adds','input_size','output_size'],col_width=10,row_settings=['var_names'],depth=4)
-        print("output shape:", model(input).shape)
+ 
+    # for IP dataset in_chans=200 num_classes=16 patchsize=11
+    model = MSSTT(in_chans=200, num_classes=16, img_size=11)
+
+    print(model)
+    x = torch.randn(100,200,11,11)
+    y = model(x)
+    print(y.shape)
