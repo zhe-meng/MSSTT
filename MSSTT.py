@@ -355,8 +355,9 @@ class Block(nn.Module):
             x = x + self.drop_path(self.mlp(self.norm2(x)))
         return x
 
+
 class MSSTT(nn.Module):
-    def __init__(self, img_size=17,  in_chans=200, num_classes=16, embed_dims1=None, depths1=[1, 0, 0, 0],
+    def __init__(self, in_chans=200, num_classes=16, embed_dims1=None, depths1=[1, 0, 0, 0],
                  num_heads1=[1,0,0,0], mlp_ratio=4., qkv_bias=True, 
                  drop_rate=0., attn_drop_rate=0., drop_path_rate=0., embed_layer=PatchEmbed, norm_layer=None,
                  act_layer=None, weight_init='',
@@ -369,8 +370,7 @@ class MSSTT(nn.Module):
 
         super().__init__()
         st2_idx = sum(depths1[:1])
-        st3_idx = sum(depths1[:2])
-        st4_idx = sum(depths1[:3])
+
         depth = sum(depths1)
         self.num_classes = num_classes
         norm_layer = norm_layer or partial(nn.LayerNorm, eps=1e-6)
@@ -379,8 +379,7 @@ class MSSTT(nn.Module):
         dpr = [x.item() for x in torch.linspace(0, drop_path_rate, depth)]  # stochastic depth decay rule
         embed_dims1 = in_chans
         self.patch_embed = FirstPatchEmbed(in_chans=in_chans, embed_dim=embed_dims1)
-        self.num_patches1 = num_patches = img_size 
-        self.pos_embed1 = nn.Parameter(torch.zeros(1, num_patches, num_patches, embed_dims1))
+
         self.blocks1 = nn.Sequential(*[
             Block(
                 dim=embed_dims1, num_heads1=num_heads1[0], mlp_ratio=mlp_ratio, qkv_bias=qkv_bias, drop=drop_rate,
@@ -400,7 +399,6 @@ class MSSTT(nn.Module):
         return x.mean(1)
     
     def forward(self, x):
-        # x = x.squeeze()
         x = self.forward_features(x)
         x = self.head(x)
         return x
@@ -410,7 +408,7 @@ class MSSTT(nn.Module):
 if __name__ == '__main__':
  
     # for IP dataset in_chans=200 num_classes=16 patchsize=11
-    model = MSSTT(in_chans=200, num_classes=16, img_size=11)
+    model = MSSTT(in_chans=200, num_classes=16)
 
     print(model)
     x = torch.randn(100,200,11,11)
